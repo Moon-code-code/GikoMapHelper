@@ -1,4 +1,5 @@
-<img width="1552" height="1105" alt="firefox_UY3L1MuYY1" src="https://github.com/user-attachments/assets/74c65e40-f1e3-4b6c-8eec-201889f342d4" />
+<img width="2355" height="1267" alt="firefox_wiHIOnnNKL" src="https://github.com/user-attachments/assets/496ae8d1-5b14-4928-b0e2-c6a9efb1da05" />
+
 # GikoMapHelper
 
 A visual web-based editor for creating and editing room layouts in Gikopoi-like projects.
