@@ -1,3 +1,4 @@
+<img width="1552" height="1105" alt="firefox_UY3L1MuYY1" src="https://github.com/user-attachments/assets/74c65e40-f1e3-4b6c-8eec-201889f342d4" />
 # GikoMapHelper
 
 A visual web-based editor for creating and editing room layouts in Gikopoi-like projects.
@@ -9,7 +10,7 @@ A visual web-based editor for creating and editing room layouts in Gikopoi-like 
 - **Grid alignment**  Snap the walkable grid to the map, with visual guides for tile coordinates
 
 - **Object placement**  
-Fit all objects — Auto-align each object's offset to its position in background.svg if it still exists in background.svg.
+Fit all objects â€” Auto-align each object's offset to its position in background.svg if it still exists in background.svg.
 Drag and position interactive objects on your map, manually enter coordinates, can position objects that exist as seperate .svg files to where they also exist on the background map as well as remove them from the background.svg so they dont get rendered twice.
 
 - **Wall/movement control**  Define blocked tiles and one-way walls
