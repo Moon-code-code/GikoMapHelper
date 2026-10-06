@@ -158,7 +158,7 @@ async function handle(req, res) {
         let p; try { p = JSON.parse(await readBody(req)); } catch (e) { return json(res, 400, { error: "bad json" }); }
         if (!p.room || !SAFE_NAME.test(p.room)) return json(res, 400, { error: "bad room" });
         let sel;
-        if (p.action === "crop") sel = "background.svg";
+        if (p.action === "crop") sel = "crop-all";
         else if (p.action === "all") sel = "all";
         else if (p.action === "grid") { if (!CORNERS.includes(p.corner)) return json(res, 400, { error: "bad corner" }); sel = "grid:" + p.corner; }
         else if (p.action === "save") {
@@ -279,7 +279,7 @@ input[type=number]::-webkit-inner-spin-button{opacity:1;height:30px;width:22px;c
 <button data-corner="left" class="sel">Left</button><button data-corner="top">Top</button><button data-corner="right">Right</button><button data-corner="bottom">Bottom</button><button id="pickPt" title="Click the selected corner's point on the map">Pick</button></div>
 <h2>Other</h2>
 <small>Fit all objects: aligns each object's offset to where that object is drawn in background.svg (if it is there).</small>
-<div class="row"><button data-act="crop">Crop background</button><button data-act="all">Fit all objects</button></div>
+<div class="row"><button data-act="crop" title="Crops background.svg and every object svg to their content, adjusting offsets. Backups go to Desktop/GikoBackups.">Crop all SVG files</button><button data-act="all">Fit all objects</button></div>
 <small>Fit one object: same as above, for a single object.</small><select id="obj"></select>
 <div class="row"><button data-act="object">Fit this object</button></div>
 <small>Add objects: svg files in the room folder that aren't objects on the map yet. Tick the ones to add (all are ticked by default), then press Add. Then use Fit all objects to position them.</small>

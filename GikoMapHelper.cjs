@@ -353,7 +353,7 @@ if (!selection && !infoMode) {
     console.log("                       b) crop background.svg's document size to its content, shifting originCoordinates + offsets");
     console.log("                       c) align the walking grid to the floor outline (you choose which corner)");
     console.log("                       Only offsets/origin in the .ts and background.svg change; originals are backed up first.");
-    console.log("  2) background.svg  - crops the document size to fit the content, for optimization");
+    console.log("  2) Crop all SVGs   - crops background.svg and every object svg to their content, for optimization");
     console.log("                       (also shifts originCoordinates and object offsets in the .ts to match)");
     console.log("  3) Align grid      - moves the walking grid (originCoordinates) to the floor outline of background.svg");
     console.log("  4) All objects     - fit every object listed below");
@@ -365,7 +365,7 @@ if (!selection && !infoMode) {
         if (!batchCorner) fail("Invalid choice.");
         batchRemove = ask("Also remove the fitted objects' shapes from background.svg? (y/n): ").toLowerCase() === "y";
     }
-    else if (pick === 2) selection = "background.svg";
+    else if (pick === 2) selection = "crop-all";
     else if (pick === 3) {
         const c = askCorner();
         selection = c && "grid:" + c;
@@ -422,6 +422,62 @@ function cropBackground() {
     fs.writeFileSync(bgPath, bgSvg);
     fs.writeFileSync(tsPath, ts);
     console.log(`Cropped to ${nw}x${nh}. Backups: ${bgBackup}\n           ${tsBackup}`);
+}
+
+// ---------- crop object svgs ----------
+
+function cropObjects() {
+    const plans = [];
+    let ts = fs.readFileSync(tsPath, "utf8");
+    const entries = readObjects(ts);
+    for (const f of allObjects) {
+        const svgPath = path.join(roomDir, f);
+        const svg = fs.readFileSync(svgPath, "utf8");
+        const doc = docBox(svg);
+        if (!doc) { console.log(`- ${f}: skipped, couldn't read its size`); continue; }
+        let b;
+        try { b = contentBounds(svg); } catch (e) { console.log(`- ${f}: skipped, ${e.message}`); continue; }
+        const minX = Math.max(doc.x, Math.floor(b.minX - b.pad)), minY = Math.max(doc.y, Math.floor(b.minY - b.pad));
+        const maxX = Math.min(doc.x + doc.w, Math.ceil(b.maxX + b.pad)), maxY = Math.min(doc.y + doc.h, Math.ceil(b.maxY + b.pad));
+        const nw = maxX - minX, nh = maxY - minY;
+        if (nw >= doc.w - 0.5 && nh >= doc.h - 0.5) { console.log(`- ${f}: already tight (${round2(doc.w)}x${round2(doc.h)})`); continue; }
+        const used = entries.filter(o => o.url === f);
+        if (used.length !== 1 || !hasEntry(ts, f)) { console.log(`- ${f}: skipped, ${used.length ? "used more than once" : "not an object in " + path.basename(tsPath)} so its offset can't be adjusted`); continue; }
+        const o = used[0];
+        plans.push({ f, svgPath, svg, doc, minX, minY, nw, nh, ox: round2(o.ox + minX - doc.x), oy: round2(o.oy + minY - doc.y) });
+        console.log(`- ${f}: ${doc.w}x${doc.h} -> ${nw}x${nh}, offset ${o.ox},${o.oy} -> ${round2(o.ox + minX - doc.x)},${round2(o.oy + minY - doc.y)}`);
+    }
+    if (!plans.length) { console.log("No object svgs to crop."); stopQuietly(); }
+    if (interactive) write = ask("Crop these object svgs and adjust their offsets? (y/n): ").toLowerCase() === "y";
+    if (!write) { console.log("Nothing changed. Use --write (or answer y) to apply."); stopQuietly(); }
+    for (const p of plans) {
+        backup(p.svgPath);
+        const tag = rootTag(p.svg);
+        let nt = setAttr(tag, "viewBox", `${p.minX} ${p.minY} ${p.nw} ${p.nh}`);
+        nt = setAttr(nt, "width", p.nw);
+        nt = setAttr(nt, "height", p.nh);
+        fs.writeFileSync(p.svgPath, p.svg.replace(tag, () => nt));
+        ts = setEntryOffset(ts, p.f, p.ox, p.oy);
+    }
+    backup(tsPath);
+    fs.writeFileSync(tsPath, ts);
+    console.log(`Cropped ${plans.length} object svg(s).`);
+}
+
+function cropAll() {
+    const steps = [];
+    if (fs.existsSync(bgPath)) steps.push(["Crop background", cropBackground]);
+    steps.push(["Crop objects", cropObjects]);
+    if (interactive) {
+        if (ask("Crop the background and every object svg, adjusting offsets? (y/n): ").toLowerCase() !== "y") { console.log("Nothing changed."); process.exit(0); }
+        write = true;
+    } else if (!write) console.log("(Preview: each step is shown against the files as they are now.)");
+    interactive = false;
+    for (const [name, run] of steps) {
+        console.log(`\n== ${name} ==`);
+        try { run(); }
+        catch (e) { if (!(e instanceof Stop)) throw e; if (e.message) console.log("Skipped: " + e.message); }
+    }
 }
 
 // ---------- align grid ----------
@@ -1071,6 +1127,7 @@ if (sel === "everything") {
         catch (e) { if (!(e instanceof Stop)) throw e; if (e.message) console.log("Skipped: " + e.message); }
     }
 } else if (sel === "background.svg") cropBackground();
+else if (sel === "crop-all") cropAll();
 else if (sel === "grid:manual") {
     const m = (process.argv.find(a => a.startsWith("--origin=")) || "").slice(9).split(",");
     setOrigin(Number(m[0]), Number(m[1]));
