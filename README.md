@@ -18,7 +18,7 @@ Drag and position interactive objects on your map, manually enter coordinates, c
 
 - **Wall/movement control**  Define blocked tiles and one-way walls
 - **Sit and block points** Mark tiles where characters can sit or not move to at all
-
+- **Crop svg** Crops all .svg files so the document size isn't unnecessarily big
 - **Automatic backups**  Every save backs up your original files to Desktop/GikoBackups
 
 ## Quick Start
