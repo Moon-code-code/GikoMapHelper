@@ -1,5 +1,7 @@
 <img width="2355" height="1267" alt="firefox_wiHIOnnNKL" src="https://github.com/user-attachments/assets/496ae8d1-5b14-4928-b0e2-c6a9efb1da05" />
 
+This project was developed with assistance from AI tools.
+
 # GikoMapHelper
 
 A visual web-based editor for creating and editing room layouts in Gikopoi-like projects.
